@@ -9,6 +9,7 @@
 #   log_err()       - wrapper function calling log_out with "err" and $1
 #   log_info()      - wrapper function calling log_out with "info" and $1
 #   log_success()   - wrapper function calling log_out with "success" and $1
+#   log_debug()     - wrapper function calling log_out with "debug" and $1. Debug flag must be set
 #   
 #
 # Primary functions:
@@ -25,6 +26,7 @@
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
 NC='\033[0m'
 
 log_out() {
@@ -39,17 +41,17 @@ log_out() {
         "success")
              echo -e "${GREEN}[SUCCESS]${NC} ${2}";
         ;;
+        "debug")
+             if [ "$DEBUG" ]; then
+                echo -e "${YELLOW}[DEBUG]${NC} ${2}";
+             fi
+        ;;
     esac
 }
-log_err(){
-    log_out "err" "$1"
-}
-log_info(){
-    log_out "info" "$1"
-}
-log_success(){
-    log_out "success" "$1"
-}
+log_err() { log_out "err" "$1"; }
+log_info() { log_out "info" "$1"; }
+log_success() { log_out "success" "$1"; }
+log_debug() { log_out "debug" "$1"; }
 
 ##
 # Preflight checks
@@ -61,11 +63,6 @@ if ! command -v curl &> /dev/null; then
 fi
 
 ##
-# Constants
-##
-RANCHER_URL="https://rancher.domain.net"
-
-##
 # rancher-mgr.sh
 ##
 usage(){
@@ -75,7 +72,10 @@ usage(){
     echo "  be set as environment variables"
     echo
     echo "  Options:"
-    echo "      -c      Create cluster with given name. String."
+    echo "      -c      Create cluster with given name."
+    echo "      -u      Url for Rancher Cluster. Must include protocol. Example \"https://rancher.domain.net\""
+    echo "      -h      Print usage"
+    echo "      -d      Debug Mode"
     echo 
     exit 1
 }
@@ -89,6 +89,14 @@ usage(){
 # Output:
 #   Kubectl command to be ran in cluster to register
 create_cluster(){
+    log_debug "in create_cluster() function"
+    if [ "$DEBUG" ]; then
+        arg_idx=1
+        for arg in "$@"; do
+        log_debug "Argument \$${arg_idx}: ${arg}"
+        arg_idx=$((arg_idx+1))
+    done
+    fi
     local cluster_exists=false
     local response_body=""
     local cluster_id=""
@@ -132,11 +140,19 @@ create_cluster(){
     log_success "Register with command: ${registration_command}" 
 }
 
-while getopts "c:r:" opt; do
+while getopts "c:u:hd" opt; do
     case "${opt}" in
         c)
             opt_cluster_name=${OPTARG}
-            create_cluster "$RANCHER_URL" "$opt_cluster_name"
+            ;;
+        u)
+            opt_rancher_url=${OPTARG}
+            ;;
+        h)
+            usage
+            ;;
+        d)
+            DEBUG=true
             ;;
         *)
             usage
@@ -145,8 +161,10 @@ while getopts "c:r:" opt; do
 done
 
 if [ -z "$opt_cluster_name" ]; then
-    log_err "Missing required argument -c"
-    usage
+    log_err "Missing required argument -c.; See usage by running $0 -h"
+fi
+if [ -z "$opt_rancher_url" ] ; then
+    log_err "Missing required argument -u. See usage by running $0 -h"
 fi
 if [ -z "$RANCHER_ACCESS_KEY" ]; then
     log_err "Missing RANCHER_ACCESS_KEY. Set this as an environment variable"
@@ -160,3 +178,4 @@ if [ -z "$RANCHER_SECRET_KEY" ]; then
     echo
     usage
 fi
+create_cluster "$opt_rancher_url" "$opt_cluster_name"
