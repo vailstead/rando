@@ -1,0 +1,11 @@
+install-grafana:
+  stage: monitoring
+  before_script:
+    - if [ -z "${KUBECONFIG+x}" ]; then echo "KUBECONFIG not set...exiting..."; exit 1; fi
+    - helm repo add grafana https://grafana.github.io/helm-charts 
+    - helm repo update
+    - kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+  script:
+    - |
+      helm upgrade --install grafana grafana/grafana --namespace monitoring \
+      --set persistence.enabled=true
