@@ -1,0 +1,62 @@
+logging:logstash:
+  stage: logging
+  needs: ["logging:kibana"]
+  before_script:
+    - if [ -z "${KUBECONFIG+x}" ]; then echo "KUBECONFIG not set...exiting..."; exit 1; fi
+    - if [ -z "${ELASTICSEARCH_PASSWORD+x}" ]; then echo "ELASTICSEARCH_PASSWORD not set...exiting..."; exit 1; fi
+    - if [ -z "${CLUSTER_BASE_URL+x}" ]; then echo "CLUSTER_BASE_URL not set...exiting..."; exit 1; fi
+    - echo "CLUSTER_BASE_URL $CLUSTER_BASE_URL"
+    - helm repo add elastic https://helm.elastic.co
+    - helm repo update
+    - kubectl create namespace logging --dry-run=client -o yaml | kubectl apply -f -
+  script:
+    - |
+      cat << EOF > logstash-values.yml
+      image: "harbor.domain.net/docker.elastic.co/logstash/logstash"
+      secretMounts:
+        - name: "elasticsearch-master-certs"
+          secretName: "elasticsearch-master-certs"
+          path: /usr/share/logstash/certs/
+      
+      persistence:
+        enabled: true
+
+      logstashConfig:
+        logstash.yml: |
+          http.host: 0.0.0.0
+          xpack.monitoring.enabled: false
+
+      logstashPipeline: 
+        logstash.conf: |
+            input {
+              beats {
+                port => 5044
+              }
+            }
+            output {
+              elasticsearch {
+                cacert => "/usr/share/logstash/certs/ca.crt"
+                user => "elastic"
+                password => "$ELASTICSEARCH_PASSWORD"
+                hosts => "https://elasticsearch-master.logging.svc:9200"
+                manage_template => false
+                index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
+                document_type => "%{[@metadata][type]}"
+              }
+            }
+
+      service:
+        type: ClusterIP
+        ports:
+          - name: beats
+            port: 5044
+            protocol: TCP
+            targetPort: 5044
+          - name: http
+            port: 8080
+            protocol: TCP
+            targetPort: 8080
+      EOF
+    - |
+      helm upgrade --install elk-logstash elastic/logstash \
+      -f logstash-values.yml --namespace logging --create-namespace
