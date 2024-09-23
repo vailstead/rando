@@ -1,0 +1,37 @@
+logging:elastic:
+  stage: logging
+  before_script:
+    - if [ -z "${KUBECONFIG+x}" ]; then echo "KUBECONFIG not set...exiting..."; exit 1; fi
+    - if [ -z "${ELASTICSEARCH_PASSWORD+x}" ]; then echo "ELASTICSEARCH_PASSWORD not set...exiting..."; exit 1; fi
+    - if [ -z "${CLUSTER_BASE_URL+x}" ]; then echo "CLUSTER_BASE_URL not set...exiting..."; exit 1; fi
+    - echo "CLUSTER_BASE_URL $CLUSTER_BASE_URL"
+    - helm repo add elastic https://helm.elastic.co
+    - helm repo update
+    - kubectl create namespace logging --dry-run=client -o yaml | kubectl apply -f -
+  script:
+    - |
+      cat << EOF > elastic-values.yml
+      replicas: 1
+      minimumMasterNodes: 1
+      image: "harbor.domain.net/docker.elastic.co/elasticsearch/elasticsearch"
+      secret:
+        enabled: true
+        password: $ELASTICSEARCH_PASSWORD
+      ingress:
+        enabled: true
+        annotations:
+          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+        hosts:
+          - host: elk.$CLUSTER_BASE_URL
+            paths:
+              - path: /
+        
+      volumeClaimTemplate:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+      EOF
+    - |
+      helm upgrade --install elk-elasticsearch elastic/elasticsearch \
+      -f elastic-values.yml --namespace logging --create-namespace
