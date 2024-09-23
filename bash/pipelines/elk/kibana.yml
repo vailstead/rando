@@ -1,0 +1,26 @@
+logging:kibana:
+  stage: logging
+  needs: ["logging:elastic"]
+  before_script:
+    - if [ -z "${KUBECONFIG+x}" ]; then echo "KUBECONFIG not set...exiting..."; exit 1; fi
+    - if [ -z "${CLUSTER_BASE_URL+x}" ]; then echo "CLUSTER_BASE_URL not set...exiting..."; exit 1; fi
+    - echo "CLUSTER_BASE_URL $CLUSTER_BASE_URL"
+    - helm repo add elastic https://helm.elastic.co
+    - helm repo update
+    - kubectl create namespace logging --dry-run=client -o yaml | kubectl apply -f -
+  script:
+    - |
+      cat << EOF > kibana-values.yml
+      image: "harbor.domain.net/docker.elastic.co/kibana/kibana"
+      elasticsearchHosts: "https://elasticsearch-master:9200"
+      ingress:
+        enabled: true
+        className: "nginx"
+        hosts:
+          - host: kibana.$CLUSTER_BASE_URL
+            paths:
+              - path: /
+      EOF
+    - |
+      helm upgrade --install elk-kibana elastic/kibana \
+      -f kibana-values.yml --namespace logging --create-namespace
