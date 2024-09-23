@@ -1,0 +1,9 @@
+install-prometheus:
+  stage: monitoring
+  before_script:
+    - if [ -z "${KUBECONFIG+x}" ]; then echo "KUBECONFIG not set...exiting..."; exit 1; fi
+    - helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    - helm repo update
+    - kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+  script:
+    - helm upgrade --install prometheus prometheus-community/prometheus --namespace monitoring
