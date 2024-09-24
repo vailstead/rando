@@ -6,7 +6,6 @@
 #    Resolution: Remove the elk-kibana-kibana-es-token manually. 
 #                Added the --no-hooks to helm upgrade to disable pre/post upgrade hooks
 ##
-
 logging:kibana:
   stage: logging
   needs: ["logging:elastic"]
@@ -30,6 +29,15 @@ logging:kibana:
             paths:
               - path: /
       EOF
+    # Check if deployment exists first, if it exists we can do an upgrade
+    # with --no-hooks flag. If it does not exist we need to do an install
+    # without --no-hooks. See Known Issues #1
+    - kubectl get deployment elk-kibana-kibana -n logging >/dev/null 2>&1 && deployment_exists=1 || deployment_exists=0
     - |
-      helm upgrade --install elk-kibana elastic/kibana \
-      -f kibana-values.yml --namespace logging --create-namespace --no-hooks
+      if [ ${deployment_exists} == 1 ]; then 
+          echo "\"elk-kibana-kibana\" deployment already exists in namespace \"Logging\", conducting upgrade..."
+          helm upgrade --install elk-kibana elastic/kibana -f kibana-values.yml --namespace logging --create-namespace --no-hooks
+        else 
+          echo "\"elk-kibana-kibana\" deployment does not exists in namespace \"Logging\", conducting install..."
+          helm upgrade --install elk-kibana elastic/kibana -f kibana-values.yml --namespace logging --create-namespace
+      fi    
