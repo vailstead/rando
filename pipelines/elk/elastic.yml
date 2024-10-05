@@ -13,6 +13,8 @@ logging:elastic:
       cat << EOF > elastic-values.yml
       replicas: 1
       minimumMasterNodes: 1
+      # clusterHealthCheckParams added due to: https://stackoverflow.com/questions/64533991/k8s-elasticsearch-with-filebeat-is-keeping-not-ready-after-rebooting
+      clusterHealthCheckParams: 'wait_for_status=yellow&timeout=1s'
       image: "harbor.domain.net/docker.elastic.co/elasticsearch/elasticsearch"
       secret:
         enabled: true
