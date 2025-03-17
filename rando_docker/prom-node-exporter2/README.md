@@ -113,3 +113,39 @@ scrape_configs:
         regex: "node_cpu_seconds_total"
         action: drop
 ```
+
+# Remote Write
+
+## When should you use remote write
+When Should You Use Remote Write?
+- If you need long-term metric storage in a system like Thanos, Mimir, Cortex, or VictoriaMetrics.
+- If you want centralized monitoring across multiple Prometheus instances.
+- If you have high availability and need to ensure metrics are retained even if local Prometheus fails.
+
+Avoid Remote Write if:  
+
+- You only need short-term metric storage (use local Prometheus TSDB instead).
+- You expect real-time queries from Prometheus (use Thanos Query instead).
+- You have network constraints that can’t handle constant metric streaming.
+
+## Perfomance Considerations
+Prometheus Remote Write has several performance considerations because it continuously streams data to an external system, unlike local storage which writes in batches. Here’s what you need to consider:
+-  Increased CPU and Memory Usage
+  - Remote Write constantly sends data over the network, consuming CPU and memory
+  - If the write queue is too large, Prometheus can run out of memory.
+  
+- Network Bandwidth Impact
+  - Every scraped metric must be transmitted to the remote store.
+  - This can saturate network links if metrics are high-cardinality.
+ 
+- Remote Write Latency
+  - Prometheus buffers metrics before sending. If the remote system is slow, backpressure builds up.
+  - Large queues can lead to dropped metrics.
+ 
+- Query Performance
+  - Remote Write does NOT support queries!
+  - Prometheus cannot read back from a remote write endpoint.
+ 
+- Disk I/O Considerations
+  - Prometheus still writes locally before sending via Remote Write.
+  - High disk usage may cause slowdowns.
