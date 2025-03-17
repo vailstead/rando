@@ -1,0 +1,23 @@
+version: '3'
+services:
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - "--no-collector.cpufreq"
+      - "--no-collector.thermal_zone"
+
+  prometheus-agent:
+    image: prom/prometheus
+    container_name: prometheus-agent
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--enable-feature=agent-mode"
