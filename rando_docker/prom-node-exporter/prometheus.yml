@@ -1,10 +1,31 @@
+# global:
+#   scrape_interval: 15s
+
+# scrape_configs:
+#   - job_name: "node-exporter"
+#     static_configs:
+#       - targets: ["node-exporter:9100"]
+
+# remote_write:
+#   - url: "http://external-prometheus-server:9090/api/v1/write"
+
 global:
   scrape_interval: 15s
 
 scrape_configs:
   - job_name: "node-exporter"
     static_configs:
-      - targets: ["node-exporter:9100"]
-
-remote_write:
-  - url: "http://external-prometheus-server:9090/api/v1/write"
+      - targets: ["node_exporter:9100"]
+    relabel_configs:
+      # Extract the hostname from the target address
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "$1"  # Use regex to extract the hostname if needed
+        regex: "(.*):.*"  # Extract everything before the port
+      # Alternatively, if you're using Docker, you can directly set it:
+      - target_label: instance
+        replacement: "your-hostname"  # Replace with your actual hostname
+      - target_label: environment
+        replacement: "production"  # Custom label example
+      - target_label: role
+        replacement: "node_exporter"  # Custom label example
