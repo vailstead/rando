@@ -64,15 +64,18 @@ global:
 EOF
 
 helm upgrade --install gitlab gitlab/gitlab \
+  --namespace gitlab \
+  --create-namespace \
+  --version 8.10.1 \
   --values values.yaml \
   --timeout 600s
-  
-  
 ```
 
-
+X. Migrate Omnibus to object storage
 X. Update for prometheus TODO
 X. Runner configurations
 - Do runners swap automatically with DNS change?
 X. Disaster recovery (backup/restore)
+X. Autoscaling
+x. Future Proofing (scaling)
 
