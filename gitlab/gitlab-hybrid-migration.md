@@ -30,7 +30,7 @@ You should use Cloud PaaS for PostgreSQL, Redis, and object storage for all non-
 Ensure hybrid chart and omnibus are using the same Gitlab version
 
 1. (Optional) Prep Omnibus Host
-Install kubectl and helm on the existing omnibus host. This allows for managing both the gitlab instance and the kubernetes deployment from the same VM. Optional, but makes life easy.
+Install kubectl, helm, and minio cli on the existing omnibus host. This allows for managing both the gitlab instance and the kubernetes deployment from the same VM. Optional, but makes life easy.
 ```
 # omnibus host
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -39,6 +39,8 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 /get_helm.sh
+
+curl https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc && chmod +x /usr/local/bin/mc
 ```
 
 2. Helm Install
@@ -72,6 +74,46 @@ helm upgrade --install gitlab gitlab/gitlab \
 ```
 
 X. Migrate Omnibus to object storage
+```
+# gitlab.rb
+gitlab_rails['object_store']['enabled'] = true
+gitlab_rails['object_store']['proxy_download'] = true
+gitlab_rails['object_store']['remote_directory'] = 'gitlab' # Bucket name
+gitlab_rails['object_store']['connection'] = {
+  'provider' => 'AWS', # or your provider
+  'aws_access_key_id' => 'access',
+  'aws_secret_access_key' => 'secret',
+  'region' => 'us-west-1', # e.g., us-west-1
+  'endpoint' => 'endpoint', # Optional, for custom S3-compatible services
+  'path_style' => true # Set to true if using a custom S3-compatible service
+}
+
+# For GitLab uploads
+gitlab_rails['object_store']['uploads']['enabled'] = true
+gitlab_rails['object_store']['artifacts']['enabled'] = true
+gitlab_rails['object_store']['lfs']['enabled'] = true
+gitlab_rails['object_store']['packages']['enabled'] = true
+gitlab_rails['object_store']['pages']['enabled'] = true
+```
+
+then reconfgiure
+```
+gitlab-ctl reconfigure
+```
+
+then run rake task to migrate all:
+```
+gitlab-rake "gitlab:uploads:migrate:all"
+```
+
+and you can track progress:
+```
+gitlab-rails dbconsole --database main
+gitlabhq_production=# SELECT count(*) AS total, sum(case when store = '1' then 1 else 0 end) AS filesystem, sum(case when store = '2' then 1 else 0 end) AS objectstg FROM uploads;
+```
+
+X. change gitlab VM to use 1 core and 8 cpu instead of 2 core and 4 cpu
+X. migrate registry from local omnibus to object storage
 X. Update for prometheus TODO
 X. Runner configurations
 - Do runners swap automatically with DNS change?
