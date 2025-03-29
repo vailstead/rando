@@ -5,12 +5,14 @@ Current Architecture: Omnibus 1k Architecture - https://docs.gitlab.com/administ
 Target Architecture: Hybrid 2k Architecture - https://docs.gitlab.com/administration/reference_architectures/2k_users/#cloud-native-hybrid-reference-architecture-with-helm-charts-alternative
 Helm Chart Advanced Configuration: https://docs.gitlab.com/charts/advanced/
 Gitlab Environment Toolkit (GET): https://gitlab.com/gitlab-org/gitlab-environment-toolkit 
+Performance considerations: https://docs.gitlab.com/administration/reference_architectures/2k_users/#performance-considerations
 
 ## Questions:
 1. Support of GET for on-prem homelabs - i.e. proxmox or vmware support
 2. If not using GET - should the basic Helm chart be used or the Gitlab Operator
+3. Which storage driver should kubernetes use?
 
-## Methodoly
+## Methodology
 The 2k Hybrid Architecture supports the following workload: API: 40 RPS, Web: 4 RPS, Git (Pull): 4 RPS, Git (Push): 1 RPS. This is an increase from the existing single server Omnibus deployed in my homelab: https://docs.gitlab.com/administration/reference_architectures/1k_users/.
 Notably the Hybrid 2k architecture only needs single PostgreSQL, Redis, and Gitaly component. Theoretically we should be able to deploy the stateless components (Webservice, Sidekiq, etc) in a new kubernetes deployment and keep only the Postgres, Redis, and Gitaly services on the current
 running Omnibus instance. This provides a low risk path of migrating to a Hybrid deployment. We should simple swap DNS to point to the Webservices deploying via Kubernetes that are configured to the existing Omnibus instance which has only the Postgres, Redis, and Gitaly services running. 
@@ -23,6 +25,29 @@ In a production deployment:
 
 The stateful components, like PostgreSQL or Gitaly (a Git repository storage dataplane), must run outside the cluster on PaaS or compute instances. This configuration is required to scale and reliably service the variety of workloads found in production GitLab environments.
 You should use Cloud PaaS for PostgreSQL, Redis, and object storage for all non-Git repository storage.
+
+## Hybrid Components
+- Kubernetes
+  - Webservice pod (Puma and Workhorse) - 4 Puma workers, 4 vCPU, 5GB memory (request), 7GB memory (limit). For 40 RPS or 2,000 users, we recommend a total Puma worker count of around 12 so in turn it’s recommended to run at least 3 Webservice pods
+  - Nginx - deployed as a daemonset
+  - Sidekiq pod - sidekiq worker - 900m vCPU, 2GB memory (request), 4GB memory (limit). an initial target of 4 Sidekiq workers has been used here.
+  - Supporting services (i.e. gitlab shell, toolbox, container registry, pages, monitoring)
+
+- Single VM
+  - 
+
+## Kubernetes Requirements
+- Multi-node cluster with the following node labels:
+  - workload: support - default node selector for all workloads.
+  - workload: sidekiq - selector for sidekiq pods
+  - workload: support - selector for webservice pods
+  - CSI Driver?????
+- Secrets
+  - postgresql-secret
+
+## Performance Considerations
+  - TODO
+  - Large monorepos (larger than several gigabytes)
 
 ## Hybrid Instructions
 
