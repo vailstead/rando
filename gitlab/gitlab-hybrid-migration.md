@@ -141,6 +141,7 @@ gitlabhq_production=# SELECT count(*) AS total, sum(case when store = '1' then 1
 gitlabhq_production=# SELECT count(*) AS total, sum(case when file_store = '1' then 1 else 0 end) AS filesystem, sum(case when file_store = '2' then 1 else 0 end) AS objectstg FROM ci_job_artifacts;
 ```
 
+X. updating gitlab-rails-secret with omnibus data
 X. change gitlab VM to use 1 core and 8 cpu instead of 2 core and 4 cpu
 X. migrate registry from local omnibus to object storage
 X. Update for prometheus TODO
