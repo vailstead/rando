@@ -7,6 +7,7 @@ Helm Chart Advanced Configuration: https://docs.gitlab.com/charts/advanced/
 Gitlab Environment Toolkit (GET): https://gitlab.com/gitlab-org/gitlab-environment-toolkit 
 Performance considerations: https://docs.gitlab.com/administration/reference_architectures/2k_users/#performance-considerations  
 Rails secret: https://docs.gitlab.com/charts/backup-restore/restore/  
+Gitlab Grafana Dashboards: https://gitlab.com/gitlab-org/grafana-dashboards/-/tree/master?ref_type=heads  
 
 ## Questions:
 1. Support of GET for on-prem homelabs - i.e. proxmox or vmware support
