@@ -150,6 +150,12 @@ VERSION=v4.45.1
 BINARY=yq_linux_amd64
 wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq &&    chmod +x /usr/bin/yq
 ```
+
+X. Migrate local object storage to MinIO
+```
+ensure object storage is configured in gitlab.rb and alias is set, then use mc mirror
+mc mirror /var/opt/gitlab/gitlab-rails/shared/registry minio/gitlab-registry-storage
+```
 X. updating gitlab-rails-secret with omnibus data
 X. change gitlab VM to use 1 core and 8 cpu instead of 2 core and 4 cpu
 X. migrate registry from local omnibus to object storage
