@@ -1,11 +1,12 @@
 # Process of moving from Gitlab Omnibus to Hybrid Architecture
 
 ## References
-Current Architecture: Omnibus 1k Architecture - https://docs.gitlab.com/administration/reference_architectures/1k_users/
-Target Architecture: Hybrid 2k Architecture - https://docs.gitlab.com/administration/reference_architectures/2k_users/#cloud-native-hybrid-reference-architecture-with-helm-charts-alternative
-Helm Chart Advanced Configuration: https://docs.gitlab.com/charts/advanced/
+Current Architecture: Omnibus 1k Architecture - https://docs.gitlab.com/administration/reference_architectures/1k_users/  
+Target Architecture: Hybrid 2k Architecture - https://docs.gitlab.com/administration/reference_architectures/2k_users/#cloud-native-hybrid-reference-architecture-with-helm-charts-alternative  
+Helm Chart Advanced Configuration: https://docs.gitlab.com/charts/advanced/  
 Gitlab Environment Toolkit (GET): https://gitlab.com/gitlab-org/gitlab-environment-toolkit 
-Performance considerations: https://docs.gitlab.com/administration/reference_architectures/2k_users/#performance-considerations
+Performance considerations: https://docs.gitlab.com/administration/reference_architectures/2k_users/#performance-considerations  
+Rails secret: https://docs.gitlab.com/charts/backup-restore/restore/  
 
 ## Questions:
 1. Support of GET for on-prem homelabs - i.e. proxmox or vmware support
@@ -141,6 +142,12 @@ gitlabhq_production=# SELECT count(*) AS total, sum(case when store = '1' then 1
 gitlabhq_production=# SELECT count(*) AS total, sum(case when file_store = '1' then 1 else 0 end) AS filesystem, sum(case when file_store = '2' then 1 else 0 end) AS objectstg FROM ci_job_artifacts;
 ```
 
+x. Install yq:
+```
+VERSION=v4.45.1
+BINARY=yq_linux_amd64
+wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq &&    chmod +x /usr/bin/yq
+```
 X. updating gitlab-rails-secret with omnibus data
 X. change gitlab VM to use 1 core and 8 cpu instead of 2 core and 4 cpu
 X. migrate registry from local omnibus to object storage
