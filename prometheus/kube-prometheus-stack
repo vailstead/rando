@@ -1,1 +1,7 @@
 https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+prometheus CRD spec: https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.Prometheus
+
+https://prometheus-operator.dev/docs/platform/thanos/
