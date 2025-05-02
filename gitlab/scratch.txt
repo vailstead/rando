@@ -1,0 +1,10 @@
+SELECT
+  'https://gitlab.example.com/' || string_agg(n2.path, '/' ORDER BY array_position(n1.traversal_ids, n2.id)) || '/' || p.path AS full_url
+FROM
+  projects p
+JOIN
+  namespaces n1 ON p.namespace_id = n1.id
+JOIN
+  namespaces n2 ON n2.id = ANY(n1.traversal_ids)
+GROUP BY
+  p.id, n1.traversal_ids, p.path;
