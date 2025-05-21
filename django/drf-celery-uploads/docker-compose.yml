@@ -18,10 +18,22 @@ services:
     ports:
       - "6379:6379"
 
-  celery:
+  celery_isolated:
     build: .
-    container_name: celery
-    command: bash -c "PYTHONPATH=src celery -A config worker --loglevel=info --concurrency=1"
+    container_name: celery_isolated
+    command: bash -c "PYTHONPATH=src celery -A config worker --loglevel=info --concurrency=1 --queues=isolated --hostname=isolated@%h"
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - redis
+    environment:
+      - PYTHONPATH=src
+
+  celery_default:
+    build: .
+    container_name: celery_default
+    command: bash -c "PYTHONPATH=src celery -A config worker --loglevel=info --queues=default --hostname=default@%h"
     volumes:
       - .:/app
     depends_on:
