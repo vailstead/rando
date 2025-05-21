@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: app
+    command: python src/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    container_name: celery
+    command: bash -c "PYTHONPATH=src celery -A config worker --loglevel=info --concurrency=1"
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - redis
+    environment:
+      - PYTHONPATH=src
+
+  flower:
+    build: .
+    command: bash -c "PYTHONPATH=src celery -A config flower --port=5555 --broker=redis://redis:6379/0"
+    volumes:
+      - .:/app
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
