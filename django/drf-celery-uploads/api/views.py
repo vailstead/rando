@@ -5,10 +5,11 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 
-from .tasks import process_csv
+from .tasks import process_csv, long_running_task
 
 @api_view(['GET'])
 def hello_world(request):
+    long_running_task.delay()
     return Response({"message": "Hello, world!"})
 
 @api_view(['POST'])
