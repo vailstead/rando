@@ -30,6 +30,11 @@ def process_csv(self, file_path):
         # Release the lock
         logger.info(f"[INFO] {self.request.id} - Lock release")
         cache.delete(lock_id)
+        logger.info(f"[INFO] {self.request.id} - Deleting tmp file {file_path}")
+        # Remove the temp file no matter what
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
 
     
 @shared_task(bind=True, queue='default')
