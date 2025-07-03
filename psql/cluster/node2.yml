@@ -70,8 +70,10 @@ postgresql:
       username: replicator
       password: your_replication_password_here
   pg_hba:
-    - host replication replicator 192.168.1.0/24 md5
+    - host replication replicator 127.0.0.1/32 md5 # used for local Patroni checks
+    - host replication replicator 192.168.1.0/24 md5 # used for streaming replication from other members
     - host all all 0.0.0.0/0 md5
+
 
 
 watchdog:
