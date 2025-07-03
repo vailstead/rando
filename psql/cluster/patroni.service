@@ -1,0 +1,16 @@
+# /etc/systemd/system/patroni.service
+[Unit]
+Description=Patroni PostgreSQL HA service
+After=network.target
+
+[Service]
+User=postgres
+Group=postgres
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/local/bin/patroni /etc/patroni.yml
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
