@@ -49,6 +49,18 @@ systemctl stop postgresql
 systemctl disable postgresql
 ```
 
+Set /var/lib/postrgresql/17 ownership to postgres user (created during postgres install)
+```
+chown -R postgres:postgres /var/lib/postgresql/17
+```
+
+Either move the default auto-initialized data directory or remove it. Patroni expects to completely manage the PostgreSQL including initializing the data directory, maaging postgresql.conf, pg_hba.conf, WAL setup, and controlling restarts and state
+```
+mv /var/lib/postgresql/17/main /var/lib/postgresql/17/main.bak
+OR
+rm -rf /var/lib/postgresql/17/main
+```
+
 ## 3. Install Patroni
 ```
 apt install -y python3-pip python3-psycopg2 gcc libpq-dev
@@ -101,9 +113,8 @@ postgresql:
 ```
 
 ## 5. Start Patroni
-Make sure /var/lib/postgresql/17/main is empty if this is your first time:
 ```
-rm -rf /var/lib/postgresql/17/main
+patroni /etc/patroni.yml
 ```
 
 ## 6. Connect to DB
