@@ -1,3 +1,4 @@
+node ip: 192.168.1.215
 ```
 ## /etc/default/etcd
 ## etcd(1) daemon options
@@ -71,9 +72,6 @@ bootstrap:
     - encoding: UTF8
     - data-checksums
 
-  pg_hba:
-    - host all all 0.0.0.0/0 md5
-
 postgresql:
   listen: 0.0.0.0:5432                     # Postgres listens on all IPs, port 5432
   connect_address: 192.168.1.215:5432     # This node's IP and Postgres port
@@ -86,7 +84,11 @@ postgresql:
     replication:
       username: replicator
       password: your_replication_password_here
+  pg_hba:
+    - host replication replicator 192.168.1.0/24 md5
+    - host all all 0.0.0.0/0 md5
 
 watchdog:
   mode: off
+
 ```
