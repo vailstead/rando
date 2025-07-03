@@ -37,3 +37,19 @@ postgres=# SELECT * FROM replicate_test;
   1 | replication works!
 (1 row)
 ```
+
+## ETCD
+basic health check
+```
+ETCDCTL_API=3 etcdctl \
+  --endpoints="http://192.168.1.215:2379,http://192.168.1.216:2379,http://192.168.1.217:2379" \
+  endpoint health --write-out=table
+```
+
+check status
+```
+ETCDCTL_API=3 etcdctl \
+  --endpoints="http://192.168.1.215:2379,http://192.168.1.216:2379,http://192.168.1.217:2379" \
+  endpoint status --write-out=table
+```
+
