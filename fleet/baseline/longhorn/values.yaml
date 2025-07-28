@@ -1,2 +1,12 @@
 defaultSettings:
   defaultReplicaCount: 1
+
+defaultBackupStore:
+    # backupTarget: s3://[bucket]@[region]/[folder]
+    # i.e. to store inside a bucket called "longhorn-backups" in region us-west-1 in a folder named after the cluster
+    backupTarget: s3://longhorn-backups@us-west-1/${.ClusterName}
+    # backupTargetCredentialSecret: The secret in the longhorn-system namespace with the following:
+    # AWS_ACCESS_KEY_ID: access key id
+    # AWS_SECRET_ACCESS_KEY: secret key id
+    # AWS_ENDPOINTS: https://minio.yourdomain.net
+    backupTargetCredentialSecret: longhorn-s3-secret

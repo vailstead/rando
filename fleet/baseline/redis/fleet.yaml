@@ -1,0 +1,9 @@
+defaultNamespace: redis
+
+helm:
+  chart: redis
+  repo: https://charts.bitnami.com/bitnami
+  version: 21.0.0
+  releaseName: redis
+  valuesFiles:
+    - values.yaml

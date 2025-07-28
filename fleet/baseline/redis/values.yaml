@@ -1,0 +1,6 @@
+# fleet/redis/helm-values.yaml
+architecture: standalone
+
+auth:
+  enabled: true
+  password: redispassword
