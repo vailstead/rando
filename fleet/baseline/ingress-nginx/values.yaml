@@ -1,0 +1,36 @@
+controller:
+  replicaCount: 1
+
+  ingressClassResource:
+    name: nginx
+    enabled: true
+    default: true
+
+  service:
+    type: NodePort
+    nodePorts:
+      http: 30080
+      https: 30443
+
+  hostPort:
+    enabled: false
+
+  extraArgs:
+    enable-ssl-passthrough: ""
+
+  metrics:
+    enabled: true
+
+  admissionWebhooks:
+    enabled: true
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+defaultBackend:
+  enabled: false

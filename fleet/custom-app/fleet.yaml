@@ -1,0 +1,8 @@
+defaultNamespace: demo
+helm:
+  releaseName: simple-app
+  chart: ./chart
+  values:
+    ingress:
+      enabled: true
+      hostname: simple-app.${.ClusterName}.mydomain.com

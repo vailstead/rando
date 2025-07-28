@@ -1,0 +1,25 @@
+# # installCRDs: true
+
+# # webhook:
+# #   enabled: true
+
+# # certController:
+# #   enabled: true
+
+# # leaderElect:
+# #   enabled: true
+
+# # # Set to true to watch all namespaces
+# # serviceAccount:
+# #   create: true
+
+# metrics:
+#   enabled: true
+
+# resources:
+#   limits:
+#     cpu: 100m
+#     memory: 128Mi
+#   requests:
+#     cpu: 50m
+#     memory: 64Mi
